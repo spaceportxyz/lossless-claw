@@ -1,0 +1,28 @@
+name: test
+
+# Side-Chat fork CI: guards the ENG-1045 compaction backports (A1 #621, A2 #622, A3 #651,
+# A4 #606). These test files reproduce each bug on plain 0.9.4 and pass with the fix, so a
+# green run here is the standing proof the backport is intact on this branch.
+on:
+  push:
+    branches: [sidechat-0.9.4-backport]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backport-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Reproduce-then-fix tests (A1-A4)
+        run: >-
+          npx vitest run
+          test/assembler-empty-content.test.ts
+          test/engine.test.ts
+          test/plugin-config-registration.test.ts
+      - name: Build bundle (sanity)
+        run: npm run build
